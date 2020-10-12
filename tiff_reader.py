@@ -4,7 +4,6 @@ import cv2
 from IPython import embed
 
 
-
 class TiffReader:
     def __init__(self, path):
         self.file_path = path

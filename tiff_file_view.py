@@ -1,7 +1,8 @@
 from PyQt5 import QtWidgets, QtCore
 import os
+import numpy as np
 
-from plot_widget import PlotWidget
+from roi_dialog import RoiDialog
 from tiff_reader import TiffReader
 
 import pyqtgraph as pg
@@ -18,7 +19,11 @@ class TiffFileView(QtWidgets.QWidget):
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
+        pg.setConfigOption('background', 'w')
         self.imv = pg.ImageView(self)
+        self.imv.ui.histogram.hide()
+        self.imv.ui.roiBtn.hide()
+        self.imv.ui.menuBtn.hide()
         self.imv.show()
 
         # self.figure = self.plot_widget.figure
@@ -35,16 +40,25 @@ class TiffFileView(QtWidgets.QWidget):
 
         self.slider.valueChanged.connect(self.slider_moved)
 
+        self.roi_dialog_button = QtWidgets.QPushButton(self)
+        self.roi_dialog_button.setText('Manage ROIs')
+        self.roi_dialog_button.clicked.connect(self.open_roi_dialog)
+        main_layout.addWidget(self.roi_dialog_button)
+
+    def open_roi_dialog(self):
+        roi_dialog = RoiDialog(None, self.reader)
+        roi_dialog.exec()
+
     def slider_moved(self, val):
         self.show_tiff_preview(val)
 
     def show_tiff_preview(self, val):
-        self.imv.setImage(self.reader.stack[1][val])
+        self.imv.setImage(np.rot90(np.asarray(self.reader.stack[1][val])))
         # self.ax.clear()
         # self.ax.imshow(self.reader.stack[1][val])
         # self.ax.spines['right'].set_visible(False)
         # self.ax.spines['top'].set_visible(False)
 
     def can_be_closed(self):
-        return self.plot_widget.close()
+        return self.imv.close(), self.slider.close()
 
