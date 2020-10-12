@@ -57,9 +57,10 @@ class RoiDetectionThread(QtCore.QThread):
             img = self.tiff_stack[1][i]
             kp, des = surf.detectAndCompute(img, None)
             kps.append(kp)
-            img_kp = cv2.drawKeypoints(image=img, outImage=img, keypoints=kp,
-                                    flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS, color=(255, 0, 0))
-            self.data_updated.emit(img_kp)
+            # probably somethin with thread initiation
+
+            data = [img, kp]
+            self.data_updated.emit(data)
             progress = round(((i + 1) / len(self.tiff_stack[1])) * 100.0, 2)
             self.progress_made.emit(progress)
         mask = self.get_circular_rois_mask(self, img, kps)

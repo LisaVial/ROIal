@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 import pyqtgraph as pg
 import numpy as np
+import cv2
 from roi_detection_thread import RoiDetectionThread
 
 
@@ -28,7 +29,7 @@ class RoiDialog(QtWidgets.QDialog):
         self.setWindowTitle(title)
 
         user_interactions_layout = QtWidgets.QVBoxLayout(self)
-        user_interactions_layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignCenter)
+        user_interactions_layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
 
         self.save_roi_mask_box = QtWidgets.QCheckBox('Save ROI mask')
         self.label_save_roi_mask_box = QtWidgets.QLabel('Don\'t save ROI mask')
@@ -37,7 +38,7 @@ class RoiDialog(QtWidgets.QDialog):
         user_interactions_layout.addWidget(self.label_save_roi_mask_box)
 
         self.start_roi_mask_creation_button = QtWidgets.QPushButton(self)
-        self.start_roi_mask_creation_button.setFixedSize(self.width, 25)
+        # self.start_roi_mask_creation_button.setFixedSize(self.width, 25)
         self.start_roi_mask_creation_button.setText('Create ROI mask')
         self.start_roi_mask_creation_button.clicked.connect(self.initialize_roi_mask_creation)
         user_interactions_layout.addWidget(self.start_roi_mask_creation_button)
@@ -50,7 +51,7 @@ class RoiDialog(QtWidgets.QDialog):
         user_interactions_layout.addWidget(self.progress_label)
 
         self.progress_bar = QtWidgets.QProgressBar(self)
-        self.progress_bar.setFixedSize(self.width, 25)
+        # self.progress_bar.setFixedSize(self.width, 25)
         self.progress_bar.setMinimum(0)
         self.progress_bar.setMaximum(100)
         self.progress_bar.setTextVisible(True)
@@ -90,7 +91,13 @@ class RoiDialog(QtWidgets.QDialog):
         self.progress_label.setText(str(progress) + "%")
 
     def on_data_updated(self, data):
-        self.imv.setImage(data)
+        img = data[0]
+        print(img)
+        kp = data[1]
+        print(kp)
+        img_kp = cv2.drawKeypoints(image=img, outImage=img, keypoints=kp,
+                                   flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS, color=(255, 0, 0))
+        self.imv.setImage(img_kp)
 
     def on_filter_thread_finished(self):
         self.progress_label.setText("Finished :)")
