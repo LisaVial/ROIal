@@ -16,38 +16,26 @@ class RoiDetectionThread(QtCore.QThread):
         self.roi_mask = None
 
     def get_circular_rois_mask(self, img, kps):
-        non_overlap = []
-        overlap_indices = []
+        roi_dict = dict()
         h, w = img.shape[0], img.shape[1]
         mask = np.zeros((h, w), dtype=bool)
         for keypoint_index in range(len(kps)):
-            if keypoint_index in overlap_indices:
-                continue  # skip i
+            if str(keypoint_index) in list(roi_dict.keys()):
+                continue
             else:
-                non_overlap.append(kps[keypoint_index])
-            for next_keypoint_index in range(keypoint_index + 1, len(kps)):
-                if cv2.KeyPoint_overlap(kps[keypoint_index], kps[next_keypoint_index]) > 0.0:
-                    overlap_indices.append(next_keypoint_index)
+                roi_dict[str(keypoint_index)] = np.nan()
+                x_center, y_center = \
+                    int(kps[keypoint_index].pt[0]), int(kps[keypoint_index].pt[1])
+                radius = 10  # radius
+                for x_offset in range(-radius, radius):
+                    for y_offset in [0, radius / 2, 0, -(radius / 2), radius, radius / 2, 0, -(radius / 2), radius,
+                                     radius / 2, 0,
+                                     -(radius / 2), 0]:
+                        if x_center + x_offset < w and y_center + y_offset < h:
+                            px_idx = [(x_center + x_offset, y_center + y_offset)]
+                            px_idx_tuple = np.empty(len(px_idx), dtype=object)
+                            px_idx_tuple[:] = px_idx
 
-        # for non_overlap_index in range(len(non_overlap)):
-        for non_overlap_index in range(len(non_overlap)):
-            x_center, y_center = int(non_overlap[non_overlap_index].pt[0]), int(non_overlap[non_overlap_index].pt[1])
-            radius = 10  # radius
-            mask_mask = np.array([])
-            for x_offset in range(-radius, radius):
-                for y_offset in [0, radius / 2, 0, -(radius / 2), radius, radius / 2, 0, -(radius / 2), radius,
-                                 radius / 2, 0,
-                                 -(radius / 2), 0]:
-                    if x_center + x_offset < w and y_center + y_offset < h:
-                        px_idx = [(x_center + x_offset, y_center + y_offset)]
-                        px_idx_tuple = np.empty(len(px_idx), dtype=object)
-                        px_idx_tuple[:] = px_idx
-                        mask_mask = np.append(mask_mask, px_idx)
-                        mask_mask = np.asarray([(mask_mask[i], mask_mask[i + 1]) for i in range(0, len(mask_mask), 2)
-                                                if i + 1 < len(mask_mask)])
-
-            for pixel_index in mask_mask:
-                mask[int(pixel_index[1]), int(pixel_index[0])] = True
         return mask
 
     def roi_mask_creation(self):
