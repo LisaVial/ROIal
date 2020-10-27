@@ -53,7 +53,7 @@ class TiffFileView(QtWidgets.QWidget):
         self.show_tiff_preview(val)
 
     def show_tiff_preview(self, val):
-        self.imv.setImage(np.rot90(np.asarray(self.reader.stack[1][val])))
+        self.imv.setImage(np.rot90(self.reader.stack[val]))
         # self.ax.clear()
         # self.ax.imshow(self.reader.stack[1][val])
         # self.ax.spines['right'].set_visible(False)

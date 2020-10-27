@@ -18,7 +18,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__(parent)
 
         self.setWindowTitle(title)
-        self.tiff_reader = None
+        self.tiff_reader = TiffReader
 
         self.file_list_view = DataListView(self)
         self.central_widget = QtWidgets.QDockWidget(self)
