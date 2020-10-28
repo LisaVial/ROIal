@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 import cv2
 import numpy as np
 from IPython import embed
@@ -42,16 +42,26 @@ class RoiDetectionThread(QtCore.QThread):
         surf = cv2.xfeatures2d.SURF_create(hessianThreshold=800, upright=True, extended=True)
         # detector = cv2.SimpleBlobDetector.create()
         kps = []
+        # example_img = np.zeros(self.tiff_stack[0].shape)
         for i in range(len(self.tiff_stack)):
             img = self.tiff_stack[i]
-            img = img.astype('uint8')
+            # brightest_pixels = [(j, k) for j in np.argmax(img, axis=0)[:10] for k in np.argmax(img, axis=1)[:10]]
+            # for brightest_pixel in brightest_pixels:
+            #     example_img[brightest_pixel[0]-5:brightest_pixel[0]+5,
+            #     brightest_pixel[1]-5:brightest_pixel[1]+5] = img[brightest_pixel[0]-5:brightest_pixel[0]+5,
+            #                                                  brightest_pixel[1]-5:brightest_pixel[1]+5]
+            #     example_img = np.asarray(example_img, dtype='uint8')
+            # print(example_img, '\n', img)
+            # embed()
             kp, des = surf.detectAndCompute(img, None)
             # kp = detector.detect(img)
             # embed()
             kps.extend(kp)
-            # probably somethin with thread initiation
 
-            data = [img, kp]
+            if i == len(self.tiff_stack):
+                data = [img, kp]
+            else:
+                data = [img, kp]
             self.data_updated.emit(data)
             progress = round(((i + 1) / len(self.tiff_stack)) * 100.0, 2)
             self.progress_made.emit(progress)
@@ -86,3 +96,5 @@ class RoiDetectionThread(QtCore.QThread):
         roi_dict = self.get_roi_dict(valid_rois)
         embed()
         self.finished.emit()
+
+        # [entry for tag in tags for entry in entries if tag in entry]

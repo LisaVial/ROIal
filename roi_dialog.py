@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 import pyqtgraph as pg
 import numpy as np
 import cv2
+
 from roi_detection_thread import RoiDetectionThread
 
 
@@ -109,7 +110,7 @@ class RoiDialog(QtWidgets.QDialog):
         self.progress_label.setText(str(progress) + "%")
 
     def on_data_updated(self, data):
-        self.img = data[0]
+        self.img = np.asarray(data[0], dtype='uint8')
         self.kp = data[1]
         img_kp = cv2.drawKeypoints(image=self.img, outImage=self.img, keypoints=self.kp,
                                    flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS, color=(255, 0, 0))
